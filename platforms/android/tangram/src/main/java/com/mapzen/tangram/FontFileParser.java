@@ -179,19 +179,20 @@ class FontFileParser {
                             } else {
                                 familyWeights.add(weightStr);
                             }
-
-                            final String filename = parser.nextText();
-
-                            // Don't use UI fonts
-                            if (filename.contains("UI-")) {
-                                continue;
+                            try {
+                                final String filename = parser.nextText();
+                                // Don't use UI fonts
+                                if (filename.contains("UI-")) {
+                                    continue;
+                                }
+                                // Sorry - not yet supported
+                                if (filename.contains("Emoji")) {
+                                    continue;
+                                }
+                                addFallback(Integer.valueOf(weightStr), filename);
+                            } catch (XmlPullParserException e) {
+                                e.printStackTrace();
                             }
-                            // Sorry - not yet supported
-                            if (filename.contains("Emoji")) {
-                                continue;
-                            }
-
-                            addFallback(Integer.valueOf(weightStr), filename);
                         } else {
                             skip(parser);
                         }

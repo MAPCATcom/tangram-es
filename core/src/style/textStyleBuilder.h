@@ -4,6 +4,7 @@
 #include "labels/labelProperty.h"
 #include "style/textStyle.h"
 #include "text/fontContext.h"
+#include "util/languageConfig.h"
 
 #include <memory>
 #include <vector>
@@ -77,6 +78,9 @@ protected:
     float m_tileSize = 0;
     float m_tileScale = 0;
 
+    // Language config
+    std::shared_ptr<const LanguageConfig> languageConfig;
+    float m_zoom = 0;
 };
 
 }

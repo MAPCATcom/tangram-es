@@ -348,6 +348,9 @@ public:
 
     std::shared_ptr<Platform>& getPlatform();
 
+    // Set language
+    void setLanguage(const std::string& languageCode);
+
 private:
 
     class Impl;

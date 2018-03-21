@@ -1070,6 +1070,16 @@ public class MapController implements Renderer {
         nativeSetDefaultBackgroundColor(mapPointer, red, green, blue);
     }
 
+    /**
+     * Set map labels language
+     * @param languageCode Language ISO 639-1 code
+     */
+    public void setLanguage(String languageCode) {
+        checkPointer(mapPointer);
+        nativeSetLanguage(mapPointer, languageCode);
+        requestRender();
+    }
+
     // Package private methods
     // =======================
 
@@ -1255,6 +1265,8 @@ public class MapController implements Renderer {
     private synchronized native void nativeCaptureSnapshot(long mapPtr, int[] buffer);
 
     private synchronized native void nativeSetDefaultBackgroundColor(long mapPtr, float r, float g, float b);
+
+    private synchronized native void nativeSetLanguage(long mapPtr, String languageCode);
 
     private native void nativeOnUrlComplete(long mapPtr, long requestHandle, byte[] rawDataBytes, String errorMessage);
 

@@ -31,11 +31,17 @@ namespace Tangram {
 
 const static std::string key_name("name");
 
-TextStyleBuilder::TextStyleBuilder(const TextStyle& _style) : m_style(_style) {}
+TextStyleBuilder::TextStyleBuilder(const TextStyle& _style) :
+    m_style(_style)
+{
+    languageConfig = m_style.getLanguageConfig();
+}
 
 void TextStyleBuilder::setup(const Tile& _tile){
     m_tileSize = _tile.getProjection()->TileSize();
     m_tileSize *= m_style.pixelScale();
+
+    m_zoom = _tile.getID().z;
 
     // < 1.0 when overzooming a tile
     m_tileScale = pow(2, _tile.getID().s - _tile.getID().z);
@@ -47,6 +53,8 @@ void TextStyleBuilder::setup(const Tile& _tile){
 }
 
 void TextStyleBuilder::setup(const Marker& marker, int zoom) {
+    m_zoom = zoom;
+
     float metersPerTile = 2.f * MapProjection::HALF_CIRCUMFERENCE * exp2(-zoom);
 
     // In general, a Marker won't cover the same area as a tile, so the effective
@@ -579,8 +587,11 @@ TextStyle::Parameters TextStyleBuilder::applyRule(const DrawRule& _rule,
         p.text = _props.getString(key_name);
     }
 
-
-    if (p.text.empty()) { return p; }
+    if (p.text.empty()) {
+        return p;
+    } else {
+        p.text = languageConfig->getText(_props, m_zoom);
+    }
 
     auto fontFamily = _rule.get<std::string>(StyleParamKey::text_font_family);
     fontFamily = (!fontFamily) ? &defaultFamily : fontFamily;

@@ -231,6 +231,8 @@ public:
     /* Whether or not the style is animated */
     bool isAnimated() { return m_animated; }
 
+    virtual void setLanguage(const std::string& /*languageCode*/) {}
+
     /* Make this style ready to be used (call after all needed properties are set) */
     virtual void build(const Scene& _scene);
 
