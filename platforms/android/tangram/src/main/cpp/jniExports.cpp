@@ -565,7 +565,7 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_mapzen_tangram_MapController_nativeSetLanguage(JNIEnv* jnienv, jobject obj, jlong mapPtr, jstring _languageCode) {
         assert(mapPtr > 0);
         auto map = reinterpret_cast<Tangram::Map*>(mapPtr);
-        const char *languageCode = jnienv->GetStringUTFChars(_languageCode, 0);
+        const char* languageCode = jnienv->GetStringUTFChars(_languageCode, 0);
         map->setLanguage(languageCode);
     }
 }
