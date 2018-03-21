@@ -19,9 +19,15 @@ namespace Tangram {
 TextStyle::TextStyle(std::string _name, std::shared_ptr<FontContext> _fontContext,
                      bool _sdf, Blending _blendMode, GLenum _drawMode, bool _selection)
     : Style(_name, _blendMode, _drawMode, _selection), m_sdf(_sdf),
-      m_context(_fontContext) {}
+      m_context(_fontContext) {
+    languageConfig = std::make_shared<LanguageConfig>();
+}
 
 TextStyle::~TextStyle() {}
+
+std::shared_ptr<const LanguageConfig> TextStyle::getLanguageConfig() const {
+    return languageConfig;
+}
 
 void TextStyle::constructVertexLayout() {
     m_vertexLayout = std::shared_ptr<VertexLayout>(new VertexLayout({
@@ -46,6 +52,10 @@ void TextStyle::constructShaderProgram() {
     }
 
     m_shaderSource->addSourceBlock("defines", "#define TANGRAM_TEXT\n");
+}
+
+void TextStyle::setLanguage(const std::string& languageCode) {
+    languageConfig->setLanguage(languageCode);
 }
 
 void TextStyle::onBeginUpdate() {

@@ -61,6 +61,8 @@ public:
 
     void setPixelScale(float _pixelsPerPoint);
 
+    void setLanguage(const std::string& languageCode);
+
     std::mutex tilesMutex;
     std::mutex sceneMutex;
 
@@ -306,6 +308,10 @@ void Map::setSceneReadyListener(SceneReadyCallback _onSceneReady) {
 
 std::shared_ptr<Platform>& Map::getPlatform() {
     return platform;
+}
+
+void Map::setLanguage(const std::string& languageCode) {
+    impl->setLanguage(languageCode);
 }
 
 SceneID Map::updateSceneAsync(const std::vector<SceneUpdate>& _sceneUpdates) {
@@ -757,6 +763,22 @@ void Map::Impl::setPixelScale(float _pixelsPerPoint) {
 
     // Markers must be rebuilt to apply the new pixel scale.
     markerManager.rebuildAll();
+}
+
+void Map::Impl::setLanguage(const std::string& languageCode) {
+    if (lastValidScene) {
+        const auto& styles = lastValidScene->styles();
+        for (auto it = styles.begin(); it != styles.end(); ++it) {
+            (*it)->setLanguage(languageCode);
+        }
+    }
+    if (scene) {
+        const auto& styles = scene->styles();
+        for (auto it = styles.begin(); it != styles.end(); ++it) {
+            (*it)->setLanguage(languageCode);
+        }
+    }
+    tileManager.clearTileSets();
 }
 
 void Map::setCameraType(int _type) {

@@ -5,6 +5,7 @@
 #include "labels/labelProperty.h"
 #include "labels/textLabel.h"
 #include "util/hash.h"
+#include "util/languageConfig.h"
 
 #include <memory>
 #include <vector>
@@ -71,6 +72,8 @@ public:
     void constructVertexLayout() override;
     void constructShaderProgram() override;
 
+    virtual void setLanguage(const std::string& languageCode) override;
+
     /* Create the LabelMeshes associated with FontContext GlyphTexture<s>
      * No GL involved, called from Tangram::update()
      */
@@ -103,9 +106,13 @@ public:
 
     virtual ~TextStyle() override;
 
+    std::shared_ptr<const LanguageConfig> getLanguageConfig() const;
+
 private:
 
     const std::string& applyTextSource(const Parameters& _parameters, const Properties& _props) const;
+
+    std::shared_ptr<LanguageConfig> languageConfig;
 
 };
 

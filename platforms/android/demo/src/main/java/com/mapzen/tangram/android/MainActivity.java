@@ -1,10 +1,16 @@
 package com.mapzen.tangram.android;
 
+import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Window;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.mapzen.tangram.CachePolicy;
@@ -40,19 +46,9 @@ import okhttp3.HttpUrl;
 public class MainActivity extends AppCompatActivity implements MapController.SceneLoadListener, TapResponder,
         DoubleTapResponder, LongPressResponder, FeaturePickListener, LabelPickListener, MarkerPickListener {
 
-    private static final String MAPZEN_API_KEY = BuildConfig.MAPZEN_API_KEY;
-
     private static final String TAG = "TangramDemo";
 
-    private static final String[] SCENE_PRESETS = {
-            "asset:///scene.yaml",
-            "https://mapzen.com/carto/bubble-wrap-style-more-labels/bubble-wrap-style-more-labels.zip",
-            "https://mapzen.com/carto/refill-style-more-labels/refill-style-more-labels.zip",
-            "https://mapzen.com/carto/walkabout-style-more-labels/walkabout-style-more-labels.zip",
-            "https://mapzen.com/carto/tron-style-more-labels/tron-style-more-labels.zip",
-            "https://mapzen.com/carto/cinnabar-style-more-labels/cinnabar-style-more-labels.zip",
-            "https://mapzen.com/carto/zinc-style-more-labels/zinc-style-more-labels.zip"
-    };
+    private static final String SCENE = "asset:///scene.yaml";
 
     private ArrayList<SceneUpdate> sceneUpdates = new ArrayList<>();
 
@@ -60,8 +56,6 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
     MapView view;
     LngLat lastTappedPoint;
     MapData markers;
-
-    PresetSelectionTextView sceneSelector;
 
     String pointStylingPath = "layers.touch.point.draw.icons";
     ArrayList<Marker> pointMarkers = new ArrayList<Marker>();
@@ -76,29 +70,16 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
 
         setContentView(R.layout.main);
 
-        if (MAPZEN_API_KEY.isEmpty() || MAPZEN_API_KEY.equals("null")) {
-            Log.w(TAG, "No API key found! Mapzen data sources require an API key.\n" +
-                    "Sign up for a free key at http://mapzen.com/developers and set it\n" +
-                    "in your local Gradle properties file (~/.gradle/gradle.properties)\n" +
-                    "as 'mapzenApiKey=YOUR-API-KEY-HERE'");
-        }
-
-        // Create a scene update to apply our API key in the scene.
-        sceneUpdates.add(new SceneUpdate("global.sdk_mapzen_api_key", MAPZEN_API_KEY));
-
-        // Set up a text view to allow selecting preset and custom scene URLs.
-        sceneSelector = (PresetSelectionTextView)findViewById(R.id.sceneSelector);
-        sceneSelector.setText(SCENE_PRESETS[0]);
-        sceneSelector.setPresetStrings(Arrays.asList(SCENE_PRESETS));
-        sceneSelector.setOnSelectionListener(new PresetSelectionTextView.OnSelectionListener() {
-            @Override
-            public void onSelection(String selection) {
-                map.loadSceneFile(selection, sceneUpdates);
-            }
-        });
-
         // Grab a reference to our map view.
         view = (MapView)findViewById(R.id.map);
+
+        Button promptLanguageCodeButton = (Button)findViewById(R.id.promptLanguageCode);
+        promptLanguageCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                promptLanguage();
+            }
+        });
     }
 
     @Override
@@ -107,13 +88,13 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         // The AutoCompleteTextView preserves its contents from previous instances, so if a URL was
         // set previously we want to apply it again. The text is restored in onRestoreInstanceState,
         // which occurs after onCreate and onStart, but before onPostCreate, so we get the URL here.
-        String sceneUrl = sceneSelector.getCurrentString();
+        String sceneUrl = SCENE;
 
         map = view.getMap(this);
         map.loadSceneFile(sceneUrl, sceneUpdates);
 
-        map.setZoom(16);
-        map.setPosition(new LngLat(-74.00976419448854, 40.70532700869127));
+        map.setZoom(6);
+        map.setPosition(new LngLat(21, 45));
         map.setHttpHandler(getHttpHandler());
         map.setTapResponder(this);
         map.setDoubleTapResponder(this);
@@ -291,6 +272,22 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         Log.d(TAG, "Picked marker: " + markerPickResult.getMarker().getMarkerId());
         final String message = String.valueOf(markerPickResult.getMarker().getMarkerId());
         Toast.makeText(getApplicationContext(), "Selected Marker: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void promptLanguage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Set language code");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String languageCode = input.getText().toString();
+                map.setLanguage(languageCode);
+            }
+        });
+        builder.show();
     }
 }
 
