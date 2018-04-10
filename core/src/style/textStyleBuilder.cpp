@@ -590,7 +590,10 @@ TextStyle::Parameters TextStyleBuilder::applyRule(const DrawRule& _rule,
     if (p.text.empty()) {
         return p;
     } else {
-        p.text = languageConfig->getText(_props, m_zoom);
+        std::string localizedText = languageConfig->getText(_props, m_zoom);
+        if (!localizedText.empty()) {
+            p.text = localizedText;
+        }
     }
 
     auto fontFamily = _rule.get<std::string>(StyleParamKey::text_font_family);
