@@ -12,10 +12,24 @@
 
     </com.mapzen.tangram.MapView>
 
-    <Button
-        android:id="@+id/promptLanguageCode"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="@string/set_language_code"/>
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/promptVisualizationApiKey"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/visualization_api_key"
+            />
+
+        <Button
+            android:id="@+id/promptLanguageCode"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/set_language_code"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

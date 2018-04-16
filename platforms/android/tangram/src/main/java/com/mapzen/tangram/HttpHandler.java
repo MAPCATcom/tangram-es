@@ -21,8 +21,10 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.ConnectionSpec;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.TlsVersion;
 
 /**
@@ -175,12 +177,15 @@ public class HttpHandler {
      * @param cb Callback for handling request result
      * @param requestHandle the identifier for the request
      */
-    public void onRequest(final String url, final Callback cb, final long requestHandle) {
+    public void onRequest(final String url, final Callback cb, final long requestHandle, final String postData) {
         final HttpUrl httpUrl = HttpUrl.parse(url);
-        final Request.Builder builder = new Request.Builder().url(httpUrl).tag(requestHandle);
+        Request.Builder builder = new Request.Builder().url(httpUrl).tag(requestHandle);
         final CacheControl cacheControl = cachePolicy.apply(httpUrl);
         if (cacheControl != null) {
             builder.cacheControl(cacheControl);
+        }
+        if (!postData.isEmpty()) {
+            builder = builder.post(RequestBody.create(MediaType.parse("application/json"), postData));
         }
         final Request request = builder.build();
         final Call call = okClient.newCall(request);

@@ -23,7 +23,7 @@ public:
     UrlClient(Options options);
     ~UrlClient();
 
-    UrlRequestHandle addRequest(const std::string& url, UrlCallback onComplete);
+    UrlRequestHandle addRequest(const std::string& url, UrlCallback onComplete, const std::string& postData = "");
 
     void cancelRequest(UrlRequestHandle request);
 
@@ -31,6 +31,7 @@ private:
 
     struct Request {
         std::string url;
+        std::string postData;
         UrlCallback callback;
         UrlRequestHandle handle;
         bool canceled;

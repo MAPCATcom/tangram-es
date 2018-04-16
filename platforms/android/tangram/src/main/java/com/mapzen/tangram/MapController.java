@@ -7,7 +7,6 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
@@ -21,8 +20,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -269,6 +266,10 @@ public class MapController implements Renderer {
         if (mapPointer <= 0) {
             throw new RuntimeException("Unable to create a native Map object! There may be insufficient memory available.");
         }
+    }
+
+    public void initMapcatMapView(boolean cycleRoad, boolean cycleRoute, String visualizationApiKey) {
+        nativeInitMapcatMapView(mapPointer, cycleRoad, cycleRoute, visualizationApiKey);
     }
 
     void dispose() {
@@ -1210,6 +1211,7 @@ public class MapController implements Renderer {
 
     private synchronized native void nativeOnLowMemory(long mapPtr);
     private synchronized native long nativeInit(MapController instance, AssetManager assetManager);
+    private synchronized native void nativeInitMapcatMapView(long mapPtr, boolean cycleRoad, boolean cycleRoute, String visualizationApiKey);
     private synchronized native void nativeDispose(long mapPtr);
     private synchronized native int nativeLoadScene(long mapPtr, String path, String[] updateStrings);
     private synchronized native int nativeLoadSceneAsync(long mapPtr, String path, String[] updateStrings);
@@ -1368,7 +1370,7 @@ public class MapController implements Renderer {
     }
 
     @Keep
-    void startUrlRequest(final String url, final long requestHandle) {
+    void startUrlRequest(final String url, final String postData, final long requestHandle) {
         if (httpHandler == null) {
             return;
         }
@@ -1390,7 +1392,7 @@ public class MapController implements Renderer {
             }
         };
 
-        httpHandler.onRequest(url, callback, requestHandle);
+        httpHandler.onRequest(url, callback, requestHandle, postData);
     }
 
     // Called from JNI on worker or render-thread.
