@@ -130,7 +130,7 @@ void UrlClient::curlLoop(uint32_t index) {
     char curlErrorString[CURL_ERROR_SIZE] = {0};
     // Set up an easy handle for reuse.
     auto handle = curl_easy_init();
-    curl_slist *headers = nullptr;
+    curl_slist* headers = nullptr;
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &curlWriteCallback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, &task.response);
     curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, &curlProgressCallback);
@@ -167,7 +167,7 @@ void UrlClient::curlLoop(uint32_t index) {
         if (haveRequest) {
             // Configure the easy handle.
             const char* url = task.request.url.data();
-            if (!task.request.postData.empty()){
+            if (!task.request.postData.empty()) {
                 curl_easy_setopt(handle, CURLOPT_POSTFIELDS, task.request.postData.c_str());
                 headers = curl_slist_append(headers, "Content-Type: application/json");
                 curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
