@@ -1,30 +1,5 @@
 Android
 =======
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.mapzen.tangram/tangram/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.mapzen.tangram/tangram)
-
-The recommended way use tangram-es in an Android project is to add it as a Gradle dependency. The library is hosted on Maven Central in the package 'com.mapzen.tangram'. To find the latest version number, check [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.mapzen.tangram%22).
-
-If Maven Central is not set up as a dependency repository, add it in your project's 'build.gradle' file:
-
-```
-allprojects {
-  dependencies {
-    repositories {
-      mavenCentral()
-    }
-  }
-}
-```
-
-Then add tangram-es in the 'dependencies' section of your module's 'build.gradle' file:
-
-```
-dependencies {
-  compile 'com.mapzen.tangram:tangram:$latest_version'
-}
-```
-
-That's it! If you want to build tangram-es for Android from scratch, continue reading.
 
 ## Setup ##
 
@@ -53,3 +28,9 @@ To install the demo on a connected Android device, run:
 Open the project in Android Studio, select 'demo' from the Configurations menu, then press the 'Run' button (^R).
 
 Android Studio supports debugging both the Java and C++ parts of tangram-es on a connected device or emulator. Choose one of the 'debug' build variants, set your desired breakpoints, and press the 'Debug' button (^D).
+
+## Setting Mapcat Visualization API key ##
+
+_The test application (used for development purposes) uses Mapcat vector tiles, which require a Mapcat account and Visualization API key. Get a free API key at [www.mapcat.com/planpricing/](https://www.mapcat.com/planpricing/)._
+
+The test application asks for your Mapcat Visualization API key upon startup.
