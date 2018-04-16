@@ -38,7 +38,7 @@ public:
     void setContinuousRendering(bool _isContinuous) override;
     FontSourceHandle systemFont(const std::string& _name, const std::string& _weight, const std::string& _face) const override;
     std::vector<FontSourceHandle> systemFontFallbacksHandle() const override;
-    UrlRequestHandle startUrlRequest(Url _url, UrlCallback _callback) override;
+    UrlRequestHandle startUrlRequest(Url _url, UrlCallback _callback, const std::string& postData) override;
     void cancelUrlRequest(UrlRequestHandle _request) override;
     void sceneReadyCallback(SceneID id, const SceneError* error);
 

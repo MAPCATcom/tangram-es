@@ -74,7 +74,7 @@ public:
     // finished, the callback _callback will be run with the data or error that
     // was retrieved from the URL _url. The callback may run on a different
     // thread than the original call to startUrlRequest.
-    virtual UrlRequestHandle startUrlRequest(Url _url, UrlCallback _callback) = 0;
+    virtual UrlRequestHandle startUrlRequest(Url _url, UrlCallback _callback, const std::string& postData = "") = 0;
 
     // Stop retrieving data from a URL that was previously requested. When a
     // request is canceled its callback will still be run, but the response

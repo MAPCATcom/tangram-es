@@ -34,7 +34,6 @@ import com.mapzen.tangram.TouchInput.TapResponder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +47,9 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
 
     private static final String TAG = "TangramDemo";
 
-    private static final String SCENE = "asset:///scene.yaml";
-
     private ArrayList<SceneUpdate> sceneUpdates = new ArrayList<>();
+
+    private String mapcatVisualizationApiKey;
 
     MapController map;
     MapView view;
@@ -80,6 +79,14 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
                 promptLanguage();
             }
         });
+
+        Button promptVisualizationApiKeyButton = (Button)findViewById(R.id.promptVisualizationApiKey);
+        promptVisualizationApiKeyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                promptVisualizationApiKey();
+            }
+        });
     }
 
     @Override
@@ -88,11 +95,13 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         // The AutoCompleteTextView preserves its contents from previous instances, so if a URL was
         // set previously we want to apply it again. The text is restored in onRestoreInstanceState,
         // which occurs after onCreate and onStart, but before onPostCreate, so we get the URL here.
-        String sceneUrl = SCENE;
 
         map = view.getMap(this);
-        map.loadSceneFile(sceneUrl, sceneUpdates);
 
+        promptVisualizationApiKey();
+    }
+
+    private void initMap() {
         map.setZoom(6);
         map.setPosition(new LngLat(21, 45));
         map.setHttpHandler(getHttpHandler());
@@ -106,8 +115,8 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         map.setViewCompleteListener(new ViewCompleteListener() {
             public void onViewComplete() {
                 Log.d(TAG, "View complete");
-            }});
-
+            }
+        });
         markers = map.addDataLayer("touch");
     }
 
@@ -142,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         Log.d(TAG, "onSceneReady!");
         if (sceneError == null) {
             Toast.makeText(this, "Scene ready: " + sceneId, Toast.LENGTH_SHORT).show();
+            initMap();
         } else {
             Toast.makeText(this, "Scene load error: " + sceneId + " "
                     + sceneError.getSceneUpdate().toString()
@@ -287,6 +297,29 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
                 map.setLanguage(languageCode);
             }
         });
+        builder.show();
+    }
+
+    private void promptVisualizationApiKey() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Your MAPCAT Visualization API key");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mapcatVisualizationApiKey = input.getText().toString();
+                map.initMapcatMapView(false, false, mapcatVisualizationApiKey);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() { // TODO: remove this button
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.setCancelable(false);
         builder.show();
     }
 }

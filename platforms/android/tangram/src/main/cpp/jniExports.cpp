@@ -1,6 +1,8 @@
 #include "androidPlatform.h"
 #include "data/clientGeoJsonSource.h"
 #include "map.h"
+#include "mapInit.h"
+#include "log.h"
 
 #include <cassert>
 
@@ -122,6 +124,22 @@ extern "C" {
             platform->sceneReadyCallback(id, error);
         });
         return reinterpret_cast<jlong>(map);
+    }
+
+    JNIEXPORT void JNICALL Java_com_mapzen_tangram_MapController_nativeInitMapcatMapView(JNIEnv* jniEnv, jobject obj, jlong mapPtr, jboolean cycleRoad, jboolean cycleRoute, jstring visualizationApiKey) {
+        assert(mapPtr > 0);
+        auto map = reinterpret_cast<Tangram::Map*>(mapPtr);
+        std::shared_ptr<Platform> platform = map->getPlatform();
+        MapInit mapInit(platform);
+        UrlCallback callback = [map, platform](UrlResponse response) {
+            std::string sceneYamlStr;
+            if (!response.error) {
+                sceneYamlStr = std::string(response.content.begin(), response.content.end());
+                map->loadSceneYaml(sceneYamlStr, "scene.yaml", true);
+            }
+        };
+        std::string apiKey = stringFromJString(jniEnv, visualizationApiKey);
+        mapInit.initVectorView(callback, apiKey, LayerOptions(cycleRoad, cycleRoute));
     }
 
     JNIEXPORT void JNICALL Java_com_mapzen_tangram_MapController_nativeDispose(JNIEnv* jniEnv, jobject obj, jlong mapPtr) {

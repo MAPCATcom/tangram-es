@@ -54,10 +54,10 @@ UrlClient::~UrlClient() {
     }
 }
 
-UrlRequestHandle UrlClient::addRequest(const std::string& url, UrlCallback onComplete) {
+UrlRequestHandle UrlClient::addRequest(const std::string& url, UrlCallback onComplete, const std::string& postData) {
     // Create a new request.
     m_requestCount++;
-    Request request = {url, onComplete, m_requestCount, false};
+    Request request = {url, postData, onComplete, m_requestCount, false};
     // Add the request to our list.
     {
         // Lock the mutex to prevent concurrent modification of the list by the curl loop thread.
@@ -130,6 +130,7 @@ void UrlClient::curlLoop(uint32_t index) {
     char curlErrorString[CURL_ERROR_SIZE] = {0};
     // Set up an easy handle for reuse.
     auto handle = curl_easy_init();
+    curl_slist *headers = nullptr;
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &curlWriteCallback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, &task.response);
     curl_easy_setopt(handle, CURLOPT_PROGRESSFUNCTION, &curlProgressCallback);
@@ -166,6 +167,11 @@ void UrlClient::curlLoop(uint32_t index) {
         if (haveRequest) {
             // Configure the easy handle.
             const char* url = task.request.url.data();
+            if (!task.request.postData.empty()){
+                curl_easy_setopt(handle, CURLOPT_POSTFIELDS, task.request.postData.c_str());
+                headers = curl_slist_append(headers, "Content-Type: application/json");
+                curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+            }
             curl_easy_setopt(handle, CURLOPT_URL, url);
             LOGD("curlLoop %u starting request for url: %s", index, url);
             // Perform the request.
@@ -194,6 +200,9 @@ void UrlClient::curlLoop(uint32_t index) {
     LOGD("curlLoop %u exiting", index);
     // Clean up our easy handle.
     curl_easy_cleanup(handle);
+    if (headers) {
+        curl_slist_free_all(headers);
+    }
 }
 
 } // namespace Tangram

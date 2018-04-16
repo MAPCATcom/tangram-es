@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Tangram</string>
+    <string name="visualization_api_key">Set Visualization API key</string>
     <string name="set_language_code">Set language</string>
 </resources>

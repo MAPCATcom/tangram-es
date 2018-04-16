@@ -75,7 +75,7 @@ void AndroidPlatform::setupJniEnv(JNIEnv* jniEnv) {
     bindJniEnvToThread(jniEnv);
 
     jclass tangramClass = jniEnv->FindClass("com/mapzen/tangram/MapController");
-    startUrlRequestMID = jniEnv->GetMethodID(tangramClass, "startUrlRequest", "(Ljava/lang/String;J)V");
+    startUrlRequestMID = jniEnv->GetMethodID(tangramClass, "startUrlRequest", "(Ljava/lang/String;Ljava/lang/String;J)V");
     cancelUrlRequestMID = jniEnv->GetMethodID(tangramClass, "cancelUrlRequest", "(J)V");
     getFontFilePath = jniEnv->GetMethodID(tangramClass, "getFontFilePath", "(Ljava/lang/String;)Ljava/lang/String;");
     getFontFallbackFilePath = jniEnv->GetMethodID(tangramClass, "getFontFallbackFilePath", "(II)Ljava/lang/String;");
@@ -297,8 +297,7 @@ std::vector<char> AndroidPlatform::bytesFromFile(const Url& url) const {
     return data;
 }
 
-UrlRequestHandle AndroidPlatform::startUrlRequest(Url _url, UrlCallback _callback) {
-
+UrlRequestHandle AndroidPlatform::startUrlRequest(Url _url, UrlCallback _callback, const std::string& postData) {
     JniThreadBinding jniEnv(jvm);
 
     // Get the current value of the request counter and add one, atomically.
@@ -327,8 +326,10 @@ UrlRequestHandle AndroidPlatform::startUrlRequest(Url _url, UrlCallback _callbac
 
     jstring jUrl = jstringFromString(jniEnv, _url.string());
 
+    jstring jPostData = jstringFromString(jniEnv, postData);
+
     // Call the MapController method to start the URL request.
-    jniEnv->CallVoidMethod(m_tangramInstance, startUrlRequestMID, jUrl, jRequestHandle);
+    jniEnv->CallVoidMethod(m_tangramInstance, startUrlRequestMID, jUrl, jPostData, jRequestHandle);
 
     return requestHandle;
 }
