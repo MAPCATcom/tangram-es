@@ -131,13 +131,29 @@ extern "C" {
         auto map = reinterpret_cast<Tangram::Map*>(mapPtr);
         std::shared_ptr<Platform> platform = map->getPlatform();
         MapInit mapInit(platform);
-        UrlCallback callback = [map, platform](UrlResponse response) {
+        JavaVM* jvm;
+        jniEnv->GetJavaVM(&jvm);
+
+        UrlCallback callback = [map, platform, jvm](UrlResponse response) {
             std::string sceneYamlStr;
+            JNIEnv* env;
+            JavaVMAttachArgs args;
+            args.version = JNI_VERSION_1_6;
+            args.name = NULL;
+            args.group = NULL;
+            jvm->AttachCurrentThread((JNIEnv**)&env, &args);
+            jclass clazz = env->FindClass("com/mapzen/tangram/MapInitHandler");
             if (!response.error) {
                 sceneYamlStr = std::string(response.content.begin(), response.content.end());
                 map->loadSceneYaml(sceneYamlStr, "scene.yaml", true);
+                jmethodID onSuccess = env->GetStaticMethodID(clazz, "onSuccess", "(Ljava/lang/String;)V");
+                env->CallStaticVoidMethod(clazz, onSuccess, jstringFromString(env, sceneYamlStr));
+            } else {
+                jmethodID onError = env->GetStaticMethodID(clazz, "onError", "(Ljava/lang/String;)V");
+                env->CallStaticVoidMethod(clazz, onError, jstringFromString(env, response.error));
             }
         };
+
         std::string apiKey = stringFromJString(jniEnv, visualizationApiKey);
         mapInit.initVectorView(callback, apiKey, LayerOptions(cycleRoad, cycleRoute));
     }

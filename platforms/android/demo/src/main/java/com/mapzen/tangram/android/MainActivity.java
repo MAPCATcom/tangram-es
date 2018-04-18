@@ -31,6 +31,8 @@ import com.mapzen.tangram.SceneUpdate;
 import com.mapzen.tangram.TouchInput.DoubleTapResponder;
 import com.mapzen.tangram.TouchInput.LongPressResponder;
 import com.mapzen.tangram.TouchInput.TapResponder;
+import com.mapzen.tangram.MapInitHandler;
+import com.mapzen.tangram.MapInitListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ import okhttp3.CacheControl;
 import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity implements MapController.SceneLoadListener, TapResponder,
-        DoubleTapResponder, LongPressResponder, FeaturePickListener, LabelPickListener, MarkerPickListener {
+        DoubleTapResponder, LongPressResponder, FeaturePickListener, LabelPickListener, MarkerPickListener, MapInitListener {
 
     private static final String TAG = "TangramDemo";
 
@@ -61,9 +63,31 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
 
     boolean showTileInfo = false;
 
+    private String yamlString;
+    private float zoom = 6;
+    private double lng = 21;
+    private double lat = 45;
+
+    @Override
+    public void onMapInitError(final String error) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Can't initialize Mapcat mapview with the given Visualization API key. Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onMapInitSuccess(String style) {
+        yamlString = style;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MapInitHandler.registerListener(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -71,6 +95,13 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
 
         // Grab a reference to our map view.
         view = (MapView)findViewById(R.id.map);
+        map = view.getMap(this);
+
+        if (savedInstanceState == null) {
+            promptVisualizationApiKey();
+        } else {
+            map.loadSceneYaml(savedInstanceState.getString("STYLE"), "scene.yaml", null);
+        }
 
         Button promptLanguageCodeButton = (Button)findViewById(R.id.promptLanguageCode);
         promptLanguageCodeButton.setOnClickListener(new View.OnClickListener() {
@@ -90,20 +121,34 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("STYLE", yamlString);
+        outState.putFloat("ZOOM", map.getZoom());
+        outState.putDouble("LNG", map.getPosition().longitude);
+        outState.putDouble("LAT", map.getPosition().latitude);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        yamlString = savedInstanceState.getString("STYLE");
+        zoom = savedInstanceState.getFloat("ZOOM");
+        lng = savedInstanceState.getDouble("LNG");
+        lat = savedInstanceState.getDouble("LAT");
+    }
+
+    @Override
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // The AutoCompleteTextView preserves its contents from previous instances, so if a URL was
         // set previously we want to apply it again. The text is restored in onRestoreInstanceState,
         // which occurs after onCreate and onStart, but before onPostCreate, so we get the URL here.
-
-        map = view.getMap(this);
-
-        promptVisualizationApiKey();
     }
 
-    private void initMap() {
-        map.setZoom(6);
-        map.setPosition(new LngLat(21, 45));
+    private void setMapProperties() {
+        map.setZoom(zoom);
+        map.setPosition(new LngLat(lng, lat));
         map.setHttpHandler(getHttpHandler());
         map.setTapResponder(this);
         map.setDoubleTapResponder(this);
@@ -136,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
     public void onDestroy() {
         super.onDestroy();
         view.onDestroy();
+        MapInitHandler.unregisterListener(this);
     }
 
     @Override
@@ -151,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
         Log.d(TAG, "onSceneReady!");
         if (sceneError == null) {
             Toast.makeText(this, "Scene ready: " + sceneId, Toast.LENGTH_SHORT).show();
-            initMap();
+            setMapProperties();
         } else {
             Toast.makeText(this, "Scene load error: " + sceneId + " "
                     + sceneError.getSceneUpdate().toString()
@@ -313,11 +359,9 @@ public class MainActivity extends AppCompatActivity implements MapController.Sce
                 map.initMapcatMapView(false, false, mapcatVisualizationApiKey);
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() { // TODO: remove this button
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
+            public void onClick(DialogInterface dialogInterface, int i) {}
         });
         builder.setCancelable(false);
         builder.show();
